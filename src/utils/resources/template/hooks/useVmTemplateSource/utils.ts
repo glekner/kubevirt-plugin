@@ -7,6 +7,7 @@ import {
   V1beta1DataVolumeSourcePVC,
   V1beta1DataVolumeSourceRef,
   V1beta1DataVolumeSourceRegistry,
+  V1VirtualMachine,
 } from '@kubevirt-ui/kubevirt-api/kubevirt';
 import { k8sGet } from '@openshift-console/dynamic-plugin-sdk';
 
@@ -48,17 +49,15 @@ const poorManProcess = (template: V1Template): V1Template => {
 };
 
 /**
- * a function to get the boot source from a template and its status
- * @param {V1Template} template - the template to get the boot source from
- * @returns the template's boot source and its status
+ * a function to get the boot source from a vm and its status
+ * @param {V1VirtualMachine} vm - the template to get the boot source from
+ * @returns the vm's boot source and its status
  */
-export const getTemplateBootSourceType = (template: V1Template): TemplateBootSource => {
-  const vmObject = getTemplateVirtualMachineObject(poorManProcess(template));
-
-  const rootVolume = vmObject?.spec?.template?.spec?.volumes?.find(
+export const getVMBootSourceType = (vm: V1VirtualMachine): TemplateBootSource => {
+  const rootVolume = vm?.spec?.template?.spec?.volumes?.find(
     (v) => v.name === TEMPLATE_ROOTDISK_VOLUME_NAME,
   );
-  const rootDataVolumeTemplate = vmObject?.spec?.dataVolumeTemplates?.find(
+  const rootDataVolumeTemplate = vm?.spec?.dataVolumeTemplates?.find(
     (dv) => dv.metadata?.name === rootVolume?.name,
   );
 
@@ -97,6 +96,16 @@ export const getTemplateBootSourceType = (template: V1Template): TemplateBootSou
   }
 
   return null;
+};
+
+/**
+ * a function to get the boot source from a vm and its status
+ * @param {V1Template} template - the template to get the boot source from
+ * @returns the template's boot source and its status
+ */
+export const getTemplateBootSourceType = (template: V1Template): TemplateBootSource => {
+  const vmObject = getTemplateVirtualMachineObject(poorManProcess(template));
+  return getVMBootSourceType(vmObject);
 };
 
 /**
